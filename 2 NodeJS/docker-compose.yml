@@ -1,0 +1,71 @@
+version: '3.9'
+
+services:
+  app1:
+    build: .
+    container_name: nodejs-app1
+    environment:
+      - AUTHOR=Vasiliy
+      - UUID=replica-1
+    expose:
+      - "8000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/hostname"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  app2:
+    build: .
+    container_name: nodejs-app2
+    environment:
+      - AUTHOR=Vasiliy
+      - UUID=replica-2
+    expose:
+      - "8000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/hostname"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  app3:
+    build: .
+    container_name: nodejs-app3
+    environment:
+      - AUTHOR=Vasiliy
+      - UUID=replica-3
+    expose:
+      - "8000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/hostname"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - "8000:8000"
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
