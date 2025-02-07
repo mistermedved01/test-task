@@ -1,12 +1,12 @@
 {
   "name": "simple-api",
   "version": "1.0.0",
-  "description": "Simple Node.js API app for Docker demo",
+  "description": "Simple Node.js API app",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
-  "author": "Your Name",
+  "author": "Vasiliy",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1"
