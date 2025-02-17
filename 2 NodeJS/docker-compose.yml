@@ -7,16 +7,16 @@ services:
     environment:
       - AUTHOR=Vasiliy
       - UUID=replica-1
-    expose:
-      - "8000"
+    expose: #Открывает порт 8000 внутри сети Docker (не на хосте). 
+      - "8000" #Внешние подключения невозможны, но другие контейнеры в той же сети (app-network) смогут обращаться к app1 через 8000.
     networks:
-      - app-network
+      - app-network #Подключает контейнер к сети app-network, позволяя взаимодействовать с nginx и другими сервисами.
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/hostname"]
-      interval: 30s
-      retries: 3
-      start_period: 10s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/hostname"] #Делает HTTP-запрос. Если статус 200, контейнер считается здоровым.
+      interval: 30s #Проверка каждые 30 секунд.
+      retries: 3 #Если три проверки подряд не пройдут, контейнер считается нерабочим.
+      start_period: 10s #Даёт приложению 10 секунд на запуск перед первой проверкой.
+      timeout: 10s #Если проверка длится дольше 10 секунд, считается неудачной.
 
   app2:
     build: .
@@ -58,8 +58,8 @@ services:
       dockerfile: Dockerfile.nginx
     container_name: nginx
     ports:
-      - "8000:8000"
-    depends_on:
+      - "8000:8000" #Перенаправляет порт 8000 контейнера на порт 8000 хоста / Запросы с компьютера (localhost:8000) попадут в nginx
+    depends_on: #Гарантирует, что nginx стартует после app1, app2 и app3.
       - app1
       - app2
       - app3
@@ -69,3 +69,16 @@ services:
 networks:
   app-network:
     driver: bridge
+
+# Вместо app1, app2, app3 использовать docker-compose up --scale app=3 – это проще.
+# Добавить restart: always, чтобы контейнеры перезапускались при сбоях.
+# Добавить в nginx балансировку через least_conn или ip_hash
+
+#Вывод: Дублирование оправдано
+#Docker healthcheck следит за жизнью отдельного контейнера и может его перезапускать.
+#Nginx healthcheck следит за доступностью конкретного бэкенда и исключает его из балансировки.
+#Они работают независимо и дополняют друг друга.
+
+#Использование -f в HEALTHCHECK гарантирует, 
+#что контейнер помечается "unhealthy" при ошибках API. 
+#Это полезно, если важно, чтобы Nginx и Docker не отправляли запросы на нерабочие сервисы.
